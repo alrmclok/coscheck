@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  experimental: {
-    agentFeedback: true,
-  },
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components sengaja dimatikan dulu: auth + query DB di layout
+  // jadi wajib dibungkus <Suspense>. Bisa dinyalakan lagi nanti kalau perlu.
   turbopack: {
     rules: {
       "*.css": {

@@ -27,3 +27,10 @@ export const badge =
 
 export const badgeOff =
   "border border-line px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-muted";
+
+export const field = "flex flex-col gap-1 text-[11px] font-bold";
+
+export const inputFull = `${input} w-full`;
+
+export const sectionTitle =
+  "mb-3 mt-8 border-b border-line pb-2 font-mono text-[11px] font-medium uppercase tracking-[1.2px] text-muted";

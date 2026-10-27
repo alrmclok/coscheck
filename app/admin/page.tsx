@@ -4,6 +4,10 @@ import { eyebrow, pageTitle } from "@/lib/ui";
 
 export const metadata = { title: "Admin — coscheck" };
 
+const adminLinks = [
+  { href: "/admin/events", title: "Acara", desc: "Tambah, edit, publikasikan, dan verifikasi acara." },
+];
+
 const ownerLinks = [
   { href: "/admin/team", title: "Tim admin", desc: "Tambah atau nonaktifkan admin." },
   { href: "/admin/cities", title: "Kota", desc: "Kelola daftar kota dan zona waktunya." },
@@ -21,13 +25,12 @@ export default async function AdminHome() {
         HALO, <span className="text-accent">{firstName}.</span>
       </h1>
       <p className="mt-4 max-w-[560px] text-sm leading-[1.7] text-muted">
-        Daftar acara, laporan, dan pesan ke owner akan muncul di sini di
+        Kelola acara dari sini. Laporan dan pesan ke owner menyusul di
         milestone berikutnya.
       </p>
 
-      {user.role === "owner" && (
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          {ownerLinks.map((l) => (
+      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+        {[...adminLinks, ...(user.role === "owner" ? ownerLinks : [])].map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -36,9 +39,8 @@ export default async function AdminHome() {
               <strong className="block font-display text-[15px]">{l.title}</strong>
               <span className="mt-1 block text-xs leading-normal text-muted">{l.desc}</span>
             </Link>
-          ))}
-        </div>
-      )}
+        ))}
+      </div>
     </>
   );
 }

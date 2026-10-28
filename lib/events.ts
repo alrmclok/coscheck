@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeInstagramUrl } from "./instagram";
+import { isAllowedImageUrl } from "./instagram-import";
 import { TZ_LABEL, type Timezone } from "./tz";
 
 // ---------- Waktu ----------
@@ -77,6 +78,14 @@ export type SavedImage = {
   height: number | null;
 };
 
+/** Gambar dari Instagram yang belum ada di Cloudinary: server yang mengambilnya lewat URL saat Simpan. */
+export type RemoteImage = { type: "url"; url: string };
+export type ImageEntry = SavedImage | RemoteImage;
+
+export function isRemoteImage(i: ImageEntry): i is RemoteImage {
+  return "type" in i && i.type === "url";
+}
+
 export type EventFormValues = {
   id: string;
   title: string;
@@ -136,7 +145,7 @@ const eventSchema = z
 export type ParsedTicket = { name: string | null; priceIdr: number; url: string | null };
 
 export type ParsedEvent = {
-  images: SavedImage[];
+  images: ImageEntry[];
   title: string;
   description: string | null;
   typeId: string | null;
@@ -210,13 +219,19 @@ export function parseEventForm(
     height: z.number().int().positive().nullable(),
   });
 
-  let images: SavedImage[] = [];
+  // Gambar dari Instagram: hanya URL dari host yang diizinkan, diambil Cloudinary saat Simpan
+  const remoteSchema = z.object({
+    type: z.literal("url"),
+    url: z.string().max(2000).refine(isAllowedImageUrl),
+  });
+
+  let images: ImageEntry[] = [];
   try {
-    images = z.array(imageSchema).max(10).parse(JSON.parse(String(fd.get("images") ?? "[]")));
+    images = z.array(z.union([imageSchema, remoteSchema])).max(10).parse(JSON.parse(String(fd.get("images") ?? "[]")));
   } catch {
     return { ok: false, error: "Daftar gambar tidak valid (maksimal 10). Muat ulang halaman lalu coba lagi.", values };
   }
-  if (new Set(images.map((i) => i.cloudinaryId)).size !== images.length) {
+  if (new Set(images.map((i) => (isRemoteImage(i) ? i.url : i.cloudinaryId))).size !== images.length) {
     return { ok: false, error: "Ada gambar yang dobel di daftar.", values };
   }
 

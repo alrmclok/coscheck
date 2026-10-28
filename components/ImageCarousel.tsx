@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { ArrowLeft, ArrowRight, GripVertical, ImagePlus, Loader2, X } from "lucide-react";
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import { THUMB, cldUrl } from "@/lib/cloudinary-url";
-import type { SavedImage } from "@/lib/events";
+import type { ImageEntry, SavedImage } from "@/lib/events";
 
 const MAX_IMAGES = 10;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -34,10 +34,11 @@ const PARALLEL_UPLOADS = 3;
  * uploading : sedang dikirim ke Cloudinary saat Simpan ditekan
  * ready     : sudah terkirim ke Cloudinary tapi acara belum tersimpan (mis. simpan gagal di tengah jalan)
  * error     : gagal dikirim, file masih ada di browser dan akan dicoba lagi saat Simpan
+ * remote    : gambar dari Instagram (hanya URL, tampil sebagai preview). Server yang mengambilnya saat Simpan
  */
 type Item = {
   key: string;
-  status: "saved" | "local" | "uploading" | "ready" | "error";
+  status: "saved" | "local" | "uploading" | "ready" | "error" | "remote";
   file?: File;
   preview?: string;
   name?: string;
@@ -50,7 +51,9 @@ type Item = {
 
 export type ImageCarouselHandle = {
   /** Kirim semua gambar lokal ke Cloudinary, lalu kembalikan daftar berurutan untuk disimpan. */
-  uploadAll: () => Promise<SavedImage[]>;
+  uploadAll: () => Promise<ImageEntry[]>;
+  /** Tambahkan gambar hasil impor Instagram. Hasil impor sebelumnya (yang belum disimpan) diganti. */
+  addRemote: (urls: string[]) => { added: number; skipped: number };
 };
 
 /** Upload langsung dari browser ke Cloudinary memakai tanda tangan dari server. */
@@ -107,7 +110,7 @@ function Thumb({
     id: item.key,
     disabled: locked,
   });
-  const src = item.preview ?? (item.url ? cldUrl(item.url, THUMB) : undefined);
+  const src = item.preview ?? (item.status === "remote" ? item.url : item.url ? cldUrl(item.url, THUMB) : undefined);
 
   return (
     <li
@@ -118,11 +121,21 @@ function Thumb({
       <div className="relative aspect-square overflow-hidden bg-line">
         {src && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt="" className={`h-full w-full object-cover ${item.status === "uploading" ? "opacity-50" : ""}`} />
+          <img
+            src={src}
+            alt=""
+            referrerPolicy={item.status === "remote" ? "no-referrer" : undefined}
+            className={`h-full w-full object-cover ${item.status === "uploading" ? "opacity-50" : ""}`}
+          />
         )}
         {index === 0 && (
           <span className="absolute left-1.5 top-1.5 bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-white">
             Cover
+          </span>
+        )}
+        {item.status === "remote" && (
+          <span className="absolute right-1.5 top-1.5 bg-ink px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-paper">
+            Instagram
           </span>
         )}
         {item.status === "uploading" && (
@@ -234,7 +247,8 @@ export function ImageCarousel({
         );
       }
 
-      return snapshot.map((i) => {
+      return snapshot.map((i): ImageEntry => {
+        if (i.status === "remote") return { type: "url", url: i.url! };
         const r = results.get(i.key);
         return {
           cloudinaryId: r?.cloudinaryId ?? i.cloudinaryId!,
@@ -243,6 +257,18 @@ export function ImageCarousel({
           height: r?.height ?? i.height ?? null,
         };
       });
+    },
+
+    addRemote(urls: string[]) {
+      const unique = Array.from(new Set(urls));
+      const kept = itemsRef.current.filter((i) => i.status !== "remote");
+      const room = Math.max(0, MAX_IMAGES - kept.length);
+      const fresh = unique.slice(0, room);
+      setItems([
+        ...kept,
+        ...fresh.map((url): Item => ({ key: crypto.randomUUID(), status: "remote", url })),
+      ]);
+      return { added: fresh.length, skipped: unique.length - fresh.length };
     },
   }));
 
@@ -349,7 +375,8 @@ export function ImageCarousel({
       <p className="mt-2 text-[11px] leading-normal text-muted">
         JPG, PNG, atau WebP, maksimal 5 MB per file dan {MAX_IMAGES} gambar. Gambar pertama jadi cover; geser untuk
         mengurutkan. Gambar baru baru diupload saat kamu menekan Simpan, dan gambar yang dihapus baru hilang setelah
-        disimpan.
+        disimpan. Gambar berlabel Instagram baru diambil server saat Simpan; kalau Simpan gagal karena linknya
+        kedaluwarsa, ambil ulang dari Instagram.
       </p>
     </div>
   );

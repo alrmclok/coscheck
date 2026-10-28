@@ -6,7 +6,18 @@ import { db } from "@/db";
 import { cities, eventImages, eventTickets, eventTypes, events } from "@/db/schema";
 import { logAudit } from "@/lib/audit";
 import { destroyImages, untagPending } from "@/lib/cloudinary";
-import { REQUIRE_COVER_TO_PUBLISH, localToUtcIso, makeSlug, parseEventForm, type SaveState } from "@/lib/events";
+import { uploadFromUrl } from "@/lib/cloudinary-import";
+import {
+  REQUIRE_COVER_TO_PUBLISH,
+  isRemoteImage,
+  localToUtcIso,
+  makeSlug,
+  parseEventForm,
+  type ImageEntry,
+  type RemoteImage,
+  type SaveState,
+  type SavedImage,
+} from "@/lib/events";
 import { back } from "@/lib/flash";
 import { requireRole } from "@/lib/guard";
 
@@ -17,6 +28,47 @@ function safeNext(v: FormDataEntryValue | null): string {
 }
 
 const now = () => sql`(datetime('now'))`;
+
+// ---------- Gambar dari Instagram ----------
+
+/** Minta Cloudinary mengambil gambar Instagram lewat URL (maks. 3 sekaligus). Urutan tetap terjaga. */
+async function resolveRemoteImages(
+  entries: ImageEntry[],
+): Promise<{ ok: true; images: SavedImage[] } | { ok: false; error: string }> {
+  const out: (SavedImage | null)[] = entries.map((e) => (isRemoteImage(e) ? null : e));
+  const todo = entries.flatMap((e, i) => (isRemoteImage(e) ? [{ e, i }] : []));
+  if (todo.length === 0) return { ok: true, images: out as SavedImage[] };
+
+  let failed = 0;
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(3, todo.length) }, async () => {
+      while (next < todo.length) {
+        const { e, i } = todo[next++];
+        try {
+          out[i] = await uploadFromUrl((e as RemoteImage).url);
+        } catch (err) {
+          failed++;
+          console.error("Cloudinary: gagal mengambil gambar dari URL", err);
+        }
+      }
+    }),
+  );
+
+  if (failed) {
+    // Buang yang sempat berhasil supaya tidak jadi sampah di Cloudinary
+    const done = todo.flatMap(({ i }) => (out[i] ? [out[i]!.cloudinaryId] : []));
+    if (done.length) {
+      const { failed: left } = await destroyImages(done);
+      if (left.length) console.error("Cloudinary: gagal membuang gambar sementara", left);
+    }
+    return {
+      ok: false,
+      error: `${failed} gambar dari Instagram gagal diambil. Linknya mungkin sudah kedaluwarsa: klik "Ambil dari Instagram" lagi, lalu Simpan.`,
+    };
+  }
+  return { ok: true, images: out as SavedImage[] };
+}
 
 // ---------- Simpan (buat baru / edit) ----------
 
@@ -60,9 +112,10 @@ export async function saveEvent(_prev: SaveState, formData: FormData): Promise<S
     ? await db.select().from(eventImages).where(eq(eventImages.eventId, existing.id))
     : [];
   const oldIds = new Set(oldImages.map((i) => i.cloudinaryId));
-  const keepIds = new Set(f.images.map((i) => i.cloudinaryId));
+  const savedEntries = f.images.filter((i): i is SavedImage => !isRemoteImage(i));
+  const keepIds = new Set(savedEntries.map((i) => i.cloudinaryId));
   const removedIds = oldImages.filter((i) => !keepIds.has(i.cloudinaryId)).map((i) => i.cloudinaryId);
-  const addedIds = f.images.filter((i) => !oldIds.has(i.cloudinaryId)).map((i) => i.cloudinaryId);
+  const addedIds = savedEntries.filter((i) => !oldIds.has(i.cloudinaryId)).map((i) => i.cloudinaryId);
 
   // Gambar baru tidak boleh sudah dipakai acara lain (kalau dihapus dari satu acara, acara lain ikut rusak)
   if (addedIds.length) {
@@ -77,6 +130,12 @@ export async function saveEvent(_prev: SaveState, formData: FormData): Promise<S
   if (existing?.status === "published" && REQUIRE_COVER_TO_PUBLISH && f.images.length === 0) {
     return fail("Acara yang sudah terbit harus punya minimal satu gambar. Tambahkan gambar, atau jadikan draft dulu.");
   }
+
+  // Gambar dari Instagram diambil Cloudinary sekarang (setelah semua validasi lolos)
+  const resolved = await resolveRemoteImages(f.images);
+  if (!resolved.ok) return fail(resolved.error);
+  const finalImages = resolved.images;
+  const finalAddedIds = finalImages.filter((i) => !oldIds.has(i.cloudinaryId)).map((i) => i.cloudinaryId);
 
   const startAt = localToUtcIso(f.start, city.timezone);
   const endAt = localToUtcIso(f.end, city.timezone);
@@ -99,7 +158,7 @@ export async function saveEvent(_prev: SaveState, formData: FormData): Promise<S
   const ticketRows = (eventId: string) =>
     f.tickets.map((t, i) => ({ eventId, name: t.name, priceIdr: t.priceIdr, url: t.url, position: i }));
   const imageRows = (eventId: string) =>
-    f.images.map((img, i) => ({
+    finalImages.map((img, i) => ({
       eventId,
       cloudinaryId: img.cloudinaryId,
       url: img.url,
@@ -135,7 +194,7 @@ export async function saveEvent(_prev: SaveState, formData: FormData): Promise<S
 
   // Setelah data tersimpan: bereskan Cloudinary. Kegagalan di sini tidak membatalkan simpan.
   try {
-    await untagPending(addedIds);
+    await untagPending(finalAddedIds);
   } catch (e) {
     console.error("Cloudinary: gagal mencabut tag pending", e);
   }

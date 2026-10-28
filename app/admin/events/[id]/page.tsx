@@ -12,6 +12,7 @@ import { badge, btnDanger, eyebrow, pageTitle, sectionTitle } from "@/lib/ui";
 import { deleteEvent } from "../actions";
 
 export const metadata = { title: "Edit acara — coscheck" };
+export const maxDuration = 60;
 
 const STATUS_LABEL = { draft: "Draft", published: "Terbit", archived: "Arsip" } as const;
 

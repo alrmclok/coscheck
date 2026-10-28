@@ -35,6 +35,7 @@ export default async function NewEventPage() {
             sourceUrl: "", ticketMode: "tba",
           }}
           tickets={[]}
+          images={[]}
           cities={cityList.map((c) => ({ id: c.id, name: c.name, label: TZ_LABEL[c.timezone] }))}
           types={typeList.map((t) => ({ id: t.id, name: t.name }))}
         />

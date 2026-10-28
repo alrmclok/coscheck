@@ -1,7 +1,7 @@
 import { asc, eq, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
-import { cities, eventTickets, eventTypes, events, reports } from "@/db/schema";
+import { cities, eventImages, eventTickets, eventTypes, events, reports } from "@/db/schema";
 import { EventActions } from "@/components/EventActions";
 import { EventForm } from "@/components/EventForm";
 import { Notice } from "@/components/Notice";
@@ -29,8 +29,9 @@ export default async function EditEventPage({
   const [ev] = await db.select().from(events).where(eq(events.id, id)).limit(1);
   if (!ev) notFound();
 
-  const [tickets, cityList, typeList, [reportRow]] = await Promise.all([
+  const [tickets, images, cityList, typeList, [reportRow]] = await Promise.all([
     db.select().from(eventTickets).where(eq(eventTickets.eventId, id)).orderBy(asc(eventTickets.position)),
+    db.select().from(eventImages).where(eq(eventImages.eventId, id)).orderBy(asc(eventImages.position)),
     db.select().from(cities).orderBy(asc(cities.name)),
     db.select().from(eventTypes).orderBy(asc(eventTypes.name)),
     db
@@ -84,6 +85,7 @@ export default async function EditEventPage({
             sourceUrl: ev.sourceUrl ?? "",
             ticketMode: ev.ticketMode,
           }}
+          images={images.map((i) => ({ cloudinaryId: i.cloudinaryId, url: i.url, width: i.width, height: i.height }))}
           tickets={tickets.map((t) => ({ name: t.name ?? "", price: String(t.priceIdr), url: t.url ?? "" }))}
           cities={cityList
             .filter((c) => c.active === 1 || c.id === ev.cityId)

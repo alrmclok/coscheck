@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { cities, eventTypes, events } from "@/db/schema";
 import { EventActions } from "@/components/EventActions";
 import { Notice } from "@/components/Notice";
+import { THUMB, cldUrl } from "@/lib/cloudinary-url";
 import { formatEventDate, formatShortDate, isStale } from "@/lib/events";
 import { requireRole } from "@/lib/guard";
 import { TZ_LABEL } from "@/lib/tz";
@@ -41,6 +42,7 @@ export default async function EventsAdminPage({
       lastVerifiedAt: events.lastVerifiedAt,
       cityName: cities.name,
       typeName: eventTypes.name,
+      cover: sql<string | null>`(select url from event_images i where i.event_id = ${events.id} order by i.position limit 1)`,
       openReports: sql<number>`(select count(*) from reports r where r.event_id = ${events.id} and r.status = 'open')`,
     })
     .from(events)
@@ -92,7 +94,13 @@ export default async function EventsAdminPage({
           return (
             <li key={e.id} className="border border-ink bg-card p-3.5">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
+                {e.cover ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={cldUrl(e.cover, THUMB)} alt="" className="size-14 shrink-0 border border-ink object-cover" />
+                ) : (
+                  <div className="grid size-14 shrink-0 place-items-center border border-dashed border-line font-mono text-[8px] text-muted">TANPA GAMBAR</div>
+                )}
+                <div className="min-w-0 flex-1">
                   <Link href={`/admin/events/${e.id}`} className="font-display text-base font-bold leading-snug tracking-[-.3px] hover:text-accent">
                     {e.title}
                   </Link>

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import { saveEvent } from "@/app/admin/events/actions";
-import type { EventFormValues, SaveState, TicketRow } from "@/lib/events";
+import type { EventFormValues, SaveState, SavedImage, TicketRow } from "@/lib/events";
 import { btn, btnGhost, field, inputFull, sectionTitle } from "@/lib/ui";
+import { ImageCarousel, type ImageCarouselHandle } from "./ImageCarousel";
 import { TicketFields } from "./TicketFields";
 
 export type CityOption = { id: string; name: string; label: string };
@@ -13,25 +14,48 @@ export type TypeOption = { id: string; name: string };
 export function EventForm({
   initial,
   tickets,
+  images,
   cities,
   types,
 }: {
   initial: EventFormValues;
   tickets: TicketRow[];
+  images: SavedImage[];
   cities: CityOption[];
   types: TypeOption[];
 }) {
   const [state, formAction, pending] = useActionState<SaveState, FormData>(saveEvent, {});
+  const carousel = useRef<ImageCarouselHandle>(null);
+  const [uploading, setUploading] = useState(false);
+  const [clientError, setClientError] = useState<string | null>(null);
   const v = { ...initial, ...(state.values ?? {}) };
   const isNew = !initial.id;
 
+  // Gambar baru dikirim ke Cloudinary saat Simpan ditekan, baru setelah itu acara disimpan.
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formEl = e.currentTarget;
+    setClientError(null);
+    setUploading(true);
+    try {
+      const images = await carousel.current!.uploadAll();
+      const fd = new FormData(formEl);
+      fd.set("images", JSON.stringify(images));
+      startTransition(() => formAction(fd));
+    } catch (err) {
+      setClientError((err as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
-    <form action={formAction}>
+    <form onSubmit={handleSubmit}>
       <input type="hidden" name="id" value={initial.id} />
 
-      {state.error && (
+      {(clientError ?? state.error) && (
         <div role="alert" className="mb-4 border border-accent px-3 py-2.5 text-xs font-semibold text-accent">
-          {state.error}
+          {clientError ?? state.error}
         </div>
       )}
 
@@ -63,6 +87,9 @@ export function EventForm({
           <textarea name="description" rows={6} maxLength={5000} defaultValue={v.description} className={inputFull} />
         </label>
       </div>
+
+      <h2 className={sectionTitle}>Gambar</h2>
+      <ImageCarousel ref={carousel} initial={images} locked={uploading || pending} />
 
       <h2 className={sectionTitle}>Waktu dan tempat</h2>
       <div className="grid gap-3.5">
@@ -113,8 +140,8 @@ export function EventForm({
       <p className="mt-1.5 text-[11px] text-muted">Dipakai untuk tombol “Postingan asli” di halaman acara dan mencegah acara ganda.</p>
 
       <div className="mt-8 flex flex-wrap gap-2.5">
-        <button type="submit" disabled={pending} className={`${btn} disabled:opacity-60`}>
-          {pending ? "Menyimpan..." : isNew ? "Simpan sebagai draft" : "Simpan perubahan"}
+        <button type="submit" disabled={pending || uploading} className={`${btn} disabled:opacity-60`}>
+          {uploading ? "Mengupload gambar..." : pending ? "Menyimpan..." : isNew ? "Simpan sebagai draft" : "Simpan perubahan"}
         </button>
         <Link href="/admin/events" className={btnGhost}>
           Batal

@@ -62,13 +62,20 @@ export function makeSlug(title: string): string {
 
 // ---------- Aturan publish ----------
 
-/** M3B mengubah ini jadi true saat upload gambar sudah jalan. */
-export const REQUIRE_COVER_TO_PUBLISH = false;
+/** Acara hanya boleh terbit kalau punya minimal satu gambar (gambar pertama = cover). */
+export const REQUIRE_COVER_TO_PUBLISH = true;
 
 // ---------- Form ----------
 
 export type TicketMode = "paid" | "free" | "tba";
 export type TicketRow = { name: string; price: string; url: string };
+
+export type SavedImage = {
+  cloudinaryId: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+};
 
 export type EventFormValues = {
   id: string;
@@ -129,6 +136,7 @@ const eventSchema = z
 export type ParsedTicket = { name: string | null; priceIdr: number; url: string | null };
 
 export type ParsedEvent = {
+  images: SavedImage[];
   title: string;
   description: string | null;
   typeId: string | null;
@@ -193,9 +201,29 @@ export function parseEventForm(
     }
   }
 
+  // Gambar: daftar berurutan (posisi 0 = cover), sudah diupload langsung ke Cloudinary oleh browser
+  const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+  const imageSchema = z.object({
+    cloudinaryId: z.string().regex(/^coscheck\/events\/[A-Za-z0-9_-]+$/),
+    url: z.string().startsWith(`https://res.cloudinary.com/${cloud}/image/upload/`),
+    width: z.number().int().positive().nullable(),
+    height: z.number().int().positive().nullable(),
+  });
+
+  let images: SavedImage[] = [];
+  try {
+    images = z.array(imageSchema).max(10).parse(JSON.parse(String(fd.get("images") ?? "[]")));
+  } catch {
+    return { ok: false, error: "Daftar gambar tidak valid (maksimal 10). Muat ulang halaman lalu coba lagi.", values };
+  }
+  if (new Set(images.map((i) => i.cloudinaryId)).size !== images.length) {
+    return { ok: false, error: "Ada gambar yang dobel di daftar.", values };
+  }
+
   return {
     ok: true,
     data: {
+      images,
       title: f.title,
       description: f.description || null,
       typeId: f.typeId || null,

@@ -1,6 +1,7 @@
 import { signOut } from "@/auth";
 import { AdminNav } from "@/components/AdminNav";
 import { requireRole } from "@/lib/guard";
+import { getNavCounts } from "@/lib/nav-counts";
 import { badge, btnGhost, shell } from "@/lib/ui";
 
 export default async function AdminLayout({
@@ -9,6 +10,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await requireRole();
+  const counts = await getNavCounts(user.role === "owner");
 
   return (
     <>
@@ -32,7 +34,7 @@ export default async function AdminLayout({
         </form>
       </div>
       <div className={`${shell} border-b border-line py-3`}>
-        <AdminNav isOwner={user.role === "owner"} />
+        <AdminNav isOwner={user.role === "owner"} counts={counts} />
       </div>
       <div className={`${shell} pb-14 pt-8`}>{children}</div>
     </>

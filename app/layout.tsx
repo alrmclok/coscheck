@@ -35,7 +35,9 @@ export default function RootLayout({
       <body className="font-sans">
         <div className="flex min-h-screen flex-col bg-paper bg-[radial-gradient(#4a3b2c10_.7px,transparent_.7px)] bg-size-[5px_5px]">
           <header className="border-b border-ink bg-paper">
-            <div className={`${shell} flex min-h-[62px] items-center justify-between gap-6 sm:min-h-[72px]`}>
+            <div
+              className={`${shell} flex min-h-[62px] items-center justify-between gap-6 sm:min-h-[72px]`}
+            >
               <Link
                 href="/"
                 aria-label="coscheck"
@@ -74,7 +76,9 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
 
           <footer className="border-t border-ink bg-sand">
-            <div className={`${shell} flex flex-col items-start justify-between gap-5 py-[22px] sm:flex-row sm:items-center`}>
+            <div
+              className={`${shell} flex flex-col items-start justify-between gap-5 py-[22px] sm:flex-row sm:items-center`}
+            >
               <div className="text-[11px] leading-[1.6] text-[#6e675e]">
                 <strong className="text-ink">coscheck.</strong> Direktori acara
                 cosplay Indonesia.
@@ -84,6 +88,7 @@ export default function RootLayout({
               <div className="flex gap-4 text-[11px] font-bold">
                 <Link href="/">Beranda</Link>
                 <Link href="/admin">Admin</Link>
+                <Link href="/credits">Kredit</Link>
               </div>
             </div>
           </footer>

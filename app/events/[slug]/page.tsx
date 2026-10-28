@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, Flag, MapPin } from "lucide-react";
+import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
+import ReportForm from "@/components/ReportForm";
 import Gallery from "@/components/Gallery";
 import { cldUrl } from "@/lib/cloudinary-url";
 import { getPublicEvent } from "@/lib/public-events";
@@ -146,10 +147,7 @@ export default async function EventPage({ params }: Props) {
             </p>
             {v.checked && <p className={v.fresh ? "font-mono text-xs text-muted" : "font-mono text-xs text-muted opacity-60"}>{v.checked}</p>}
             <p className="mt-2 text-sm">Cek tanggal verifikasinya sebelum berangkat.</p>
-            {/* M6 wires this button to the report form */}
-            <button type="button" disabled aria-disabled="true" title="Segera hadir" className={`${btnGhost} mt-3 cursor-not-allowed opacity-50`}>
-              <Flag size={16} /> Laporkan masalah
-            </button>
+            <ReportForm slug={e.slug} />
           </div>
         </div>
       </div>

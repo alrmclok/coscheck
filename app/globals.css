@@ -12,12 +12,11 @@
   --color-sand: #f2eee9;
   --color-trust: #f0ecf4;
 
-  /* new tokens for the hard-coded colors */
   --color-on-accent: #ffffff;
   --color-ok: #3b663b;
-  --color-warn: #b57a15;
+  --color-warn: #8a5c00;
   --color-soft: #635d57;
-  --color-faint: #8a8279;
+  --color-faint: #706961;
 
   --dots: #1816140d;
 }
@@ -43,11 +42,37 @@
   --color-ok: #4ade80;
   --color-warn: #fbbf24;
   --color-soft: #94a3b8;
-  --color-faint: #475569;
+  --color-faint: #64748b;
 
   --dots: #f1f5f90f;
 }
 
+html {
+  scroll-behavior: smooth;
+  scrollbar-color: var(--color-muted) var(--color-paper);
+  scrollbar-width: auto;
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-paper);
+  }
+  &::-webkit-scrollbar-track {
+    background-color: var(--color-paper);
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-muted);
+    border-radius: 5px;
+    border: 2px solid var(--color-paper);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-soft);
+  }
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
 
 body {
   background-color: var(--color-paper);
@@ -56,7 +81,7 @@ body {
 
 body { background-color: var(--color-paper); color: var(--color-ink); cursor: var(--cursor-default, default); }
 a, button, [role="button"], label, select, summary, .cursor-pointer { cursor: var(--cursor-pointer, pointer) !important; }
-input, textarea, [contenteditable="true"] { cursor: var(--cursor-text, text); }
+input, textarea, [contenteditable="true"] { cursor: var(--cursor-text, text) !important; }
 .cursor-crosshair { cursor: var(--cursor-crosshair, crosshair) !important; }
 .cursor-move, [data-dragging="true"] { cursor: var(--cursor-move, move) !important; }
 .cursor-wait, [aria-busy="true"] { cursor: var(--cursor-wait, wait) !important; }

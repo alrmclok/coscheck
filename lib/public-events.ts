@@ -2,7 +2,13 @@
 import { cache } from "react";
 import { and, asc, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { cities, eventImages, eventTickets, eventTypes, events } from "@/db/schema";
+import {
+  cities,
+  eventImages,
+  eventTickets,
+  eventTypes,
+  events,
+} from "@/db/schema";
 
 export type Tab = "upcoming" | "past";
 export const PAGE_SIZE = 24;
@@ -50,15 +56,29 @@ function likePattern(q: string): string {
   return `%${q.replace(/[\\%_]/g, "\\$&")}%`;
 }
 
+export function realError(e: unknown) {
+  console.error("DB ERROR:", (e as any)?.cause ?? e);
+}
+
 export async function getFilterOptions() {
   const [cityRows, typeRows] = await Promise.all([
-    db.select({ id: cities.id, name: cities.name }).from(cities).where(eq(cities.active, 1)).orderBy(asc(cities.name)),
-    db.select({ id: eventTypes.id, name: eventTypes.name }).from(eventTypes).where(eq(eventTypes.active, 1)).orderBy(asc(eventTypes.name)),
+    db
+      .select({ id: cities.id, name: cities.name })
+      .from(cities)
+      .where(eq(cities.active, 1))
+      .orderBy(asc(cities.name)),
+    db
+      .select({ id: eventTypes.id, name: eventTypes.name })
+      .from(eventTypes)
+      .where(eq(eventTypes.active, 1))
+      .orderBy(asc(eventTypes.name)),
   ]);
   return { cities: cityRows, types: typeRows };
 }
 
-export async function getPublicEvents(f: PublicFilters): Promise<{ items: PublicEventListItem[]; hasMore: boolean }> {
+export async function getPublicEvents(
+  f: PublicFilters,
+): Promise<{ items: PublicEventListItem[]; hasMore: boolean }> {
   const now = new Date().toISOString();
   const conds = [
     eq(events.status, "published"),
@@ -67,8 +87,10 @@ export async function getPublicEvents(f: PublicFilters): Promise<{ items: Public
   if (f.city) conds.push(eq(events.cityId, f.city));
   if (f.type) conds.push(eq(events.typeId, f.type));
   const range = f.month ? monthRange(f.month) : null;
-  if (range) conds.push(lt(events.startAt, range.to), gte(events.endAt, range.from));
-  if (f.q) conds.push(sql`${events.title} LIKE ${likePattern(f.q)} ESCAPE '\\'`);
+  if (range)
+    conds.push(lt(events.startAt, range.to), gte(events.endAt, range.from));
+  if (f.q)
+    conds.push(sql`${events.title} LIKE ${likePattern(f.q)} ESCAPE '\\'`);
 
   const rows = await db
     .select({
@@ -101,7 +123,9 @@ export async function getPublicEvents(f: PublicFilters): Promise<{ items: Public
     db
       .select({ eventId: eventImages.eventId, url: eventImages.url })
       .from(eventImages)
-      .where(and(inArray(eventImages.eventId, ids), eq(eventImages.position, 0))),
+      .where(
+        and(inArray(eventImages.eventId, ids), eq(eventImages.position, 0)),
+      ),
     db
       .select({
         eventId: eventTickets.eventId,
@@ -127,42 +151,62 @@ export async function getPublicEvents(f: PublicFilters): Promise<{ items: Public
   };
 }
 
+async function withRetry<T>(fn: () => Promise<T>, tries = 2): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (tries <= 1) throw e;
+    await new Promise((r) => setTimeout(r, 150));
+    return withRetry(fn, tries - 1);
+  }
+}
+
 /** One published event with images + tickets, or null (drafts/archived look like "not found"). */
 export const getPublicEvent = cache(async (slug: string) => {
-  const [row] = await db
-    .select({
-      id: events.id,
-      slug: events.slug,
-      title: events.title,
-      description: events.description,
-      startAt: events.startAt,
-      endAt: events.endAt,
-      timezone: events.timezone,
-      venueName: events.venueName,
-      mapsUrl: events.mapsUrl,
-      organizer: events.organizer,
-      ticketMode: events.ticketMode,
-      sourceUrl: events.sourceUrl,
-      isCancelled: events.isCancelled,
-      lastVerifiedAt: events.lastVerifiedAt,
-      cityName: cities.name,
-      typeName: eventTypes.name,
-    })
-    .from(events)
-    .innerJoin(cities, eq(cities.id, events.cityId))
-    .leftJoin(eventTypes, eq(eventTypes.id, events.typeId))
-    .where(and(eq(events.slug, slug), eq(events.status, "published")))
-    .limit(1);
+  const [row] = await withRetry(() =>
+    db
+      .select({
+        id: events.id,
+        slug: events.slug,
+        title: events.title,
+        description: events.description,
+        startAt: events.startAt,
+        endAt: events.endAt,
+        timezone: events.timezone,
+        venueName: events.venueName,
+        mapsUrl: events.mapsUrl,
+        organizer: events.organizer,
+        ticketMode: events.ticketMode,
+        sourceUrl: events.sourceUrl,
+        isCancelled: events.isCancelled,
+        lastVerifiedAt: events.lastVerifiedAt,
+        cityName: cities.name,
+        typeName: eventTypes.name,
+      })
+      .from(events)
+      .innerJoin(cities, eq(cities.id, events.cityId))
+      .leftJoin(eventTypes, eq(eventTypes.id, events.typeId))
+      .where(and(eq(events.slug, slug), eq(events.status, "published")))
+      .limit(1),
+  );
   if (!row) return null;
 
   const [images, tickets] = await Promise.all([
     db
-      .select({ url: eventImages.url, width: eventImages.width, height: eventImages.height })
+      .select({
+        url: eventImages.url,
+        width: eventImages.width,
+        height: eventImages.height,
+      })
       .from(eventImages)
       .where(eq(eventImages.eventId, row.id))
       .orderBy(asc(eventImages.position)),
     db
-      .select({ name: eventTickets.name, priceIdr: eventTickets.priceIdr, url: eventTickets.url })
+      .select({
+        name: eventTickets.name,
+        priceIdr: eventTickets.priceIdr,
+        url: eventTickets.url,
+      })
       .from(eventTickets)
       .where(eq(eventTickets.eventId, row.id))
       .orderBy(asc(eventTickets.position)),

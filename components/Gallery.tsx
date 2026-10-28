@@ -88,7 +88,7 @@ export default function Gallery({ images, title }: { images: Img[]; title: strin
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/90 p-4 select-none"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 p-4 select-none"
           onClick={() => setOpen(null)}
           onTouchStart={(ev) => (touchX.current = ev.touches[0].clientX)}
           onTouchEnd={(ev) => {

@@ -12,6 +12,7 @@ import type {
 import { btn, btnGhost, field, inputFull, sectionTitle } from "@/lib/ui";
 import { ImageCarousel, type ImageCarouselHandle } from "./ImageCarousel";
 import { TicketFields } from "./TicketFields";
+import { ResizableTextarea } from "@/components/ResizableTextarea";
 
 export type CityOption = { id: string; name: string; label: string };
 export type TypeOption = { id: string; name: string };
@@ -156,7 +157,7 @@ export function EventForm({
       {igMsg && (
         <p
           role={igMsg.kind === "error" ? "alert" : "status"}
-          className={`mt-1.5 text-[11px] font-semibold ${igMsg.kind === "error" ? "text-accent" : "text-[#57734c]"}`}
+          className={`mt-1.5 text-[11px] font-semibold ${igMsg.kind === "error" ? "text-accent" : "text-ok"}`}
         >
           {igMsg.text}
         </p>
@@ -180,7 +181,7 @@ export function EventForm({
               {copied ? "Tersalin" : "Salin"}
             </button>
           </div>
-          <textarea readOnly value={caption} rows={6} className={inputFull} />
+          <ResizableTextarea readOnly value={caption} rows={6} />
         </div>
       )}
 
@@ -219,14 +220,16 @@ export function EventForm({
           </label>
         </div>
         <label className={field}>
-          Deskripsi
-          <textarea
-            name="description"
-            rows={6}
-            maxLength={5000}
-            defaultValue={v.description}
-            className={inputFull}
-          />
+          <label className={field}>
+            Deskripsi
+            <ResizableTextarea
+              name="description"
+              rows={6}
+              maxLength={5000}
+              defaultValue={v.description}
+              maxHeight={600}
+            />
+          </label>
         </label>
       </div>
 

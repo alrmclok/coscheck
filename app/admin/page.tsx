@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/guard";
 import { getNavCounts } from "@/lib/nav-counts";
 import { eyebrow, pageTitle } from "@/lib/ui";
 
-export const metadata = { title: "Admin — coscheck" };
+export const metadata = { title: "Admin | coscheck" };
 
 type Card = { href: string; title: string; desc: string; badge?: "reports" | "inbox" };
 
@@ -53,7 +53,7 @@ export default async function AdminHome() {
               <strong className="block font-display text-[15px]">
                 {l.title}
                 {n > 0 && (
-                  <span className="ml-2 inline-block bg-accent px-1.5 py-[2px] align-middle font-mono text-[9px] font-medium text-white">
+                  <span className="ml-2 inline-block bg-accent px-1.5 py-[2px] align-middle font-mono text-[9px] font-medium text-on-accent">
                     {n}
                   </span>
                 )}

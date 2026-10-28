@@ -7,7 +7,7 @@ import { TIMEZONES, TZ_LABEL } from "@/lib/tz";
 import { badgeOff, btn, btnDanger, btnGhost, eyebrow, input, pageTitle, rowCard } from "@/lib/ui";
 import { addCity, deleteCity, setCityActive, updateCity } from "./actions";
 
-export const metadata = { title: "Kota — coscheck" };
+export const metadata = { title: "Kota | coscheck" };
 
 export default async function CitiesPage({
   searchParams,

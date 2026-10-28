@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/guard";
 import { formatDbTime } from "@/lib/reports";
 import { badge, btnGhost, eyebrow, input, pageTitle } from "@/lib/ui";
 
-export const metadata = { title: "Log audit — coscheck" };
+export const metadata = { title: "Log audit | coscheck" };
 
 const PAGE_SIZE = 50;
 

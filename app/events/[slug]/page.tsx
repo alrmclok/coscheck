@@ -65,7 +65,7 @@ export default async function EventPage({ params }: Props) {
       </Link>
 
       {e.isCancelled && (
-        <div className="mb-6 border border-ink bg-accent px-4 py-3 font-display font-bold uppercase tracking-wide text-white">
+        <div className="mb-6 border border-ink bg-accent px-4 py-3 font-display font-bold uppercase tracking-wide text-on-accent">
           Acara ini dibatalkan
         </div>
       )}
@@ -141,7 +141,7 @@ export default async function EventPage({ params }: Props) {
           </div>
 
           <div className="border border-line bg-trust p-4">
-            <p className={v.fresh ? "font-mono text-sm font-medium text-[#57734c]" : "font-mono text-sm font-medium text-[#9a6a22]"}>
+            <p className={v.fresh ? "font-mono text-sm font-medium text-ok" : "font-mono text-sm font-medium text-warn"}>
               {v.fresh ? "✓ " : ""}
               {v.label}
             </p>

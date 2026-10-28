@@ -1,93 +1,153 @@
-import Link from "next/link";
-import { shell, eyebrow, btnGhost } from "@/lib/ui";
+import type { Metadata } from "next";
+import { shell } from "@/lib/ui";
+import MemberPhoto from "@/components/MemberPhoto";
 
-// 1. DYNAMIC LIST: Tambah/kurang tim dengan gampang di sini
-interface CreditItem {
-  name: string;
-  role: "Owner" | "Admin" | "Kontributor" | "Developer";
-  isYou?: boolean;
-  contribution?: string;
-}
+export const metadata: Metadata = { title: "Kredit | coscheck" };
 
-const CREDIT_ITEMS: CreditItem[] = [
-  { name: "Nama Anda Sendiri", role: "Owner", isYou: true, contribution: "Ide proyek & Desain UI" },
-  { name: "Andi Wijaya", role: "Admin", contribution: "Manajemen data & Moderator acara" },
-  { name: "Siti Rahma", role: "Developer", contribution: "Integrasi API & Backend" },
-  { name: "Budi Santoso", role: "Kontributor", contribution: "Penyedia data Event Surabaya" },
+const members: { name: string; role: string; photo?: string; link?: string }[] =
+  [
+    {
+      name: "alrmclok",
+      role: "Creator / Owner",
+      photo: "https://res-console.cloudinary.com/re8qzxdm/thumbnails/v1/image/upload/v1793185480/ZmFudHViZQ==/preview",
+      link: "https://instagram.com/alrmclok",
+    },
+    {
+      name: "levtofer",
+      role: "Co-owner",
+      photo: "",
+      link: "https://instagram.com/levtofer",
+    },
+  ];
+
+const sponsors: { name: string; role: string; photo?: string; link?: string }[] =
+  [
+    {
+      name: "Bandung Anime Event",
+      role: "Sponsor Utama",
+      photo: "https://res-console.cloudinary.com/re8qzxdm/thumbnails/v1/image/upload/v1793185479/bG9nby1iYWU=/preview",
+      link: "https://instagram.com/bdg.anime.event",
+    },
+  ];
+
+const tools = [
+  ["Next.js & React", "kerangka aplikasi"],
+  ["Tailwind CSS", "tampilan"],
+  ["Turso & Drizzle ORM", "database"],
+  ["Cloudinary", "hosting dan optimasi gambar"],
+  ["Auth.js", "login Google untuk admin"],
+  ["Apify", "ambil data postingan Instagram"],
+  ["dnd-kit", "geser urutan gambar"],
+  ["Lucide", "ikon"],
 ];
 
+const specials = [
+  ["9 Trio", "barudak"],
+  ["Tailwind CSS", "tampilan"],
+];
+
+const fonts = ["DM Sans", "Space Grotesk", "DM Mono"];
+
 export default function CreditsPage() {
-  // Mengelompokkan berdasarkan peran jika ingin diurutkan
-  const sortedCredits = [...CREDIT_ITEMS].sort((a, b) => {
-    if (a.role === "Owner") return -1;
-    if (b.role === "Owner") return 1;
-    return 0;
-  });
-
   return (
-    <div className={`${shell} py-10`}>
-      {/* Tombol kembali ke Beranda */}
-      <div className="mb-6">
-        <Link href="/" className={`${btnGhost} text-xs font-mono uppercase tracking-wider`}>
-          ← Kembali ke Beranda
-        </Link>
-      </div>
+    <main className={`${shell} py-10 sm:py-14`}>
+      <p className="font-mono text-[11px] uppercase tracking-[1.5px] text-muted">
+        Kredit
+      </p>
+      <h1 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight sm:text-5xl">
+        Dibuat dengan <span className="text-accent">bantuan</span>
+      </h1>
 
-      <header className="mb-10 border-b border-ink pb-6">
-        <p className={eyebrow}>Di balik layar aplikasi</p>
-        <h1 className="font-display text-4xl font-bold uppercase leading-tight sm:text-5xl">
-          Kredit & <span className="text-accent">Kontributor</span>
-        </h1>
-        <p className="mt-2 text-sm text-muted">
-          Aplikasi ini dibangun dan dikelola oleh orang-orang hebat di bawah ini.
+      <section className="mt-8 border border-ink bg-card p-5 shadow-[3px_3px_0_var(--color-ink)]">
+        <h2 className="font-display text-lg font-bold uppercase">Info acara</h2>
+        <p className="mt-2 text-sm leading-relaxed text-soft">
+          Semua info acara, poster, dan foto adalah milik penyelenggaranya.
+          Setiap acara punya tombol &quot;Postingan asli&quot; yang mengarah ke
+          unggahan Instagram-nya. Selalu cek ulang ke akun penyelenggara sebelum
+          berangkat.
         </p>
-      </header>
+      </section>
 
-      {/* 2. BEDA LAYOUT: Layout List Baris Minimalis */}
-      <div className="border border-ink bg-card divide-y divide-ink">
-        {/* Header List */}
-        <div className="hidden grid-cols-3 bg-ink px-6 py-3 font-mono text-xs uppercase tracking-wider text-paper sm:grid">
-          <div>Nama</div>
-          <div>Peran</div>
-          <div>Kontribusi</div>
-        </div>
+      <section className="mt-6 border border-ink bg-card p-5 shadow-[3px_3px_0_var(--color-ink)]">
+        <h2 className="font-display text-lg font-bold uppercase">Tim</h2>
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+          {members.map((m) => (
+            <li key={m.name} className="flex items-center gap-4">
+              <MemberPhoto src={m.photo} alt={m.name} />
+              <div className="min-w-0">
+                <p className="font-bold">{m.name}</p>
+                <p className="text-sm text-soft">{m.role}</p>
+                {m.link && (
+                  <a
+                    href={m.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-accent underline underline-offset-4"
+                  >
+                    Profil
+                  </a>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        {/* Baris Kontributor */}
-        {sortedCredits.map((item, idx) => (
-          <div
-            key={idx}
-            className={`grid grid-cols-1 gap-1 px-6 py-4 text-sm sm:grid-cols-3 sm:gap-4 sm:items-center ${
-              item.isYou ? "bg-sand/40" : "hover:bg-sand/20"
-            }`}
-          >
-            {/* Kolom Nama */}
-            <div className="font-bold sm:font-normal flex items-center gap-2">
-              <span>{item.name}</span>
-              {item.isYou && (
-                <span className="bg-ink px-1.5 py-0.5 font-mono text-[10px] uppercase text-paper tracking-wide">
-                  Anda
-                </span>
-              )}
-            </div>
+      <section className="mt-6 border border-ink bg-card p-5 shadow-[3px_3px_0_var(--color-ink)]">
+        <h2 className="font-display text-lg font-bold uppercase">Sponsor</h2>
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+          {sponsors.map((s) => (
+            <li key={s.name} className="flex items-center gap-4">
+              <MemberPhoto src={s.photo} alt={s.name} />
+              <div className="min-w-0">
+                <p className="font-bold">{s.name}</p>
+                <p className="text-sm text-soft">{s.role}</p>
+                {s.link && (
+                  <a
+                    href={s.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-accent underline underline-offset-4"
+                  >
+                    Profil
+                  </a>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-            {/* Kolom Peran / Label */}
-            <div>
-              <span className={`inline-block font-mono text-xs uppercase px-2 py-0.5 border ${
-                item.role === "Owner" ? "border-accent bg-accent/10 text-accent font-bold" :
-                item.role === "Admin" ? "border-ink bg-ink text-paper" : "border-line text-muted"
-              }`}>
-                {item.role === "Owner" ? "Pemilik" : item.role === "Admin" ? "Pengelola" : item.role}
-              </span>
-            </div>
+      <section className="mt-6 border border-ink bg-card p-5 shadow-[3px_3px_0_var(--color-ink)]">
+        <h2 className="font-display text-lg font-bold uppercase">Teknologi</h2>
+        <ul className="mt-3 space-y-1.5 text-sm">
+          {tools.map(([name, note]) => (
+            <li key={name}>
+              <strong>{name}</strong>
+              <span className="text-soft"> · {note}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-            {/* Kolom Detail Kontribusi */}
-            <div className="text-xs text-muted sm:text-sm">
-              <span className="sm:hidden font-medium text-ink block mt-1">Kontribusi:</span>
-              {item.contribution || "-"}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <section className="mt-6 border border-ink bg-card p-5 shadow-[3px_3px_0_var(--color-ink)]">
+        <h2 className="font-display text-lg font-bold uppercase">Font</h2>
+        <p className="mt-2 text-sm text-soft">
+          {fonts.join(", ")}, lewat Google Fonts (lisensi SIL Open Font).
+        </p>
+      </section>
+
+      <section className="mt-6 border border-ink bg-card p-5 shadow-[3px_3px_0_var(--color-ink)]">
+        <h2 className="font-display text-lg font-bold uppercase">Special Thanks</h2>
+        <ul className="mt-3 space-y-1.5 text-sm">
+          {specials.map(([name, note]) => (
+            <li key={name}>
+              <strong>{name}</strong>
+              <span className="text-soft"> · {note}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </main>
   );
 }

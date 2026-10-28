@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/guard";
 import { badge, badgeOff, btn, btnDanger, btnGhost, eyebrow, input, pageTitle, rowCard } from "@/lib/ui";
 import { addAdmin, setAdminActive } from "./actions";
 
-export const metadata = { title: "Tim admin — coscheck" };
+export const metadata = { title: "Tim admin | coscheck" };
 
 export default async function TeamPage({
   searchParams,

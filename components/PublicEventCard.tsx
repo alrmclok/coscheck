@@ -11,7 +11,7 @@ export default function PublicEventCard({ e }: { e: PublicEventListItem }) {
   return (
     <Link
       href={`/events/${e.slug}`}
-      className="group block border border-ink bg-card shadow-[3px_3px_0_var(--color-ink)] transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--color-ink)]"
+      className="group block border border-ink bg-card shadow-[3px_3px_0_var(--color-ink)] transition hover:-translate-y-[3px] hover:-translate-x-[3px] hover:shadow-[6px_6px_0_var(--color-ink)]"
     >
       <div className="relative aspect-[16/10] overflow-hidden border-b border-ink bg-sand">
         {e.coverUrl && (
@@ -33,7 +33,7 @@ export default function PublicEventCard({ e }: { e: PublicEventListItem }) {
           </span>
         )}
         {e.isCancelled && (
-          <span className="absolute bottom-3 left-3 border border-ink bg-accent px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-white">
+          <span className="absolute bottom-3 left-3 border border-ink bg-accent px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-on-accent">
             Dibatalkan
           </span>
         )}
@@ -41,15 +41,15 @@ export default function PublicEventCard({ e }: { e: PublicEventListItem }) {
 
       <div className="space-y-1.5 p-4">
         <h3 className="font-display text-lg font-bold leading-snug">{e.title}</h3>
-        <p className="text-sm text-[#6e675e]">{place}</p>
-        <p className="font-mono text-xs text-[#6e675e]">{formatWhen(e.startAt, e.endAt, e.timezone)}</p>
+        <p className="text-sm text-soft">{place}</p>
+        <p className="font-mono text-xs text-soft">{formatWhen(e.startAt, e.endAt, e.timezone)}</p>
         <div className="flex items-center justify-between gap-2 pt-2">
           <span className="font-mono text-sm font-medium">{ticketSummary(e.ticketMode, e.ticketCount, e.minPrice)}</span>
           <span
             className={
               v.fresh
-                ? "font-mono text-[11px] font-medium text-[#57734c]"
-                : "font-mono text-[11px] font-medium text-[#9a6a22]"
+                ? "font-mono text-[11px] font-medium text-ok"
+                : "font-mono text-[11px] font-medium text-warn"
             }
           >
             {v.fresh ? "✓ " : ""}

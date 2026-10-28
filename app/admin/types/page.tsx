@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/guard";
 import { badgeOff, btn, btnDanger, btnGhost, eyebrow, input, pageTitle, rowCard } from "@/lib/ui";
 import { addType, deleteType, renameType, seedTypes, setTypeActive } from "./actions";
 
-export const metadata = { title: "Jenis acara — coscheck" };
+export const metadata = { title: "Jenis acara | coscheck" };
 
 export default async function TypesPage({
   searchParams,

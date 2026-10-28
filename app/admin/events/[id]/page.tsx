@@ -11,7 +11,7 @@ import { TZ_LABEL, type Timezone } from "@/lib/tz";
 import { badge, btnDanger, eyebrow, pageTitle, sectionTitle } from "@/lib/ui";
 import { deleteEvent } from "../actions";
 
-export const metadata = { title: "Edit acara — coscheck" };
+export const metadata = { title: "Edit acara | coscheck" };
 export const maxDuration = 60;
 
 const STATUS_LABEL = { draft: "Draft", published: "Terbit", archived: "Arsip" } as const;
@@ -53,9 +53,9 @@ export default async function EditEventPage({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className={badge}>{STATUS_LABEL[ev.status]}</span>
         {ev.isCancelled === 1 && (
-          <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-white">Dibatalkan</span>
+          <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-on-accent">Dibatalkan</span>
         )}
-        <span className={`font-mono text-[10px] ${stale ? "text-[#9a6a22]" : "text-muted"}`}>
+        <span className={`font-mono text-[10px] ${stale ? "text-warn" : "text-muted"}`}>
           {ev.lastVerifiedAt
             ? `Diverifikasi ${formatShortDate(ev.lastVerifiedAt, tz)}${stale ? " (sudah lama)" : ""}`
             : "Belum diverifikasi"}

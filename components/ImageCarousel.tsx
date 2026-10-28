@@ -18,8 +18,21 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ArrowLeft, ArrowRight, GripVertical, ImagePlus, Loader2, X } from "lucide-react";
-import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  GripVertical,
+  ImagePlus,
+  Loader2,
+  X,
+} from "lucide-react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import { THUMB, cldUrl } from "@/lib/cloudinary-url";
 import type { ImageEntry, SavedImage } from "@/lib/events";
 
@@ -59,7 +72,8 @@ export type ImageCarouselHandle = {
 /** Upload langsung dari browser ke Cloudinary memakai tanda tangan dari server. */
 async function uploadToCloudinary(file: File): Promise<SavedImage> {
   const signRes = await fetch("/api/admin/upload-sign", { method: "POST" });
-  if (!signRes.ok) throw new Error("Sesi habis. Muat ulang halaman lalu coba lagi.");
+  if (!signRes.ok)
+    throw new Error("Sesi habis. Muat ulang halaman lalu coba lagi.");
   const sign = await signRes.json();
 
   const fd = new FormData();
@@ -71,18 +85,30 @@ async function uploadToCloudinary(file: File): Promise<SavedImage> {
   fd.append("tags", sign.tags);
   fd.append("allowed_formats", sign.allowedFormats);
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`, {
-    method: "POST",
-    body: fd,
-  });
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`,
+    {
+      method: "POST",
+      body: fd,
+    },
+  );
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.public_id) {
     throw new Error(data?.error?.message ?? "Upload gagal.");
   }
-  return { cloudinaryId: data.public_id, url: data.secure_url, width: data.width, height: data.height };
+  return {
+    cloudinaryId: data.public_id,
+    url: data.secure_url,
+    width: data.width,
+    height: data.height,
+  };
 }
 
-async function runPool<T>(list: T[], size: number, fn: (x: T) => Promise<void>) {
+async function runPool<T>(
+  list: T[],
+  size: number,
+  fn: (x: T) => Promise<void>,
+) {
   let next = 0;
   await Promise.all(
     Array.from({ length: Math.min(size, list.length) }, async () => {
@@ -106,16 +132,33 @@ function Thumb({
   onMove: (index: number, dir: -1 | 1) => void;
   onRemove: (key: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: item.key,
     disabled: locked,
   });
-  const src = item.preview ?? (item.status === "remote" ? item.url : item.url ? cldUrl(item.url, THUMB) : undefined);
+  const src =
+    item.preview ??
+    (item.status === "remote"
+      ? item.url
+      : item.url
+        ? cldUrl(item.url, THUMB)
+        : undefined);
 
   return (
     <li
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 10 : undefined }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : undefined,
+      }}
       className={`border border-ink bg-card ${isDragging ? "opacity-70 shadow-[3px_3px_0_var(--color-ink)]" : ""}`}
     >
       <div className="relative aspect-square overflow-hidden bg-line">
@@ -124,12 +167,14 @@ function Thumb({
           <img
             src={src}
             alt=""
-            referrerPolicy={item.status === "remote" ? "no-referrer" : undefined}
+            referrerPolicy={
+              item.status === "remote" ? "no-referrer" : undefined
+            }
             className={`h-full w-full object-cover ${item.status === "uploading" ? "opacity-50" : ""}`}
           />
         )}
         {index === 0 && (
-          <span className="absolute left-1.5 top-1.5 bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-white">
+          <span className="absolute left-1.5 top-1.5 bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-on-accent">
             Cover
           </span>
         )}
@@ -140,7 +185,11 @@ function Thumb({
         )}
         {item.status === "uploading" && (
           <span className="absolute inset-0 grid place-items-center text-ink">
-            <Loader2 size={22} className="animate-spin" aria-label="Mengupload" />
+            <Loader2
+              size={22}
+              className="animate-spin"
+              aria-label="Mengupload"
+            />
           </span>
         )}
         {item.status === "error" && (
@@ -155,20 +204,40 @@ function Thumb({
           type="button"
           aria-label="Geser untuk mengurutkan"
           disabled={locked}
-          className="cursor-grab touch-none p-1 text-muted active:cursor-grabbing disabled:opacity-25"
+          className="cursor-grab touch-none p-1 text-muted active:cursor-grabbing disabled:opacity-25 cursor-move"
           {...attributes}
           {...listeners}
         >
-          <GripVertical size={15} aria-hidden="true" />
+          <span className="cursor-move touch-none" /* + your drag listeners */>
+            <GripVertical size={15} aria-hidden="true" />
+          </span>
         </button>
         <div className="flex items-center">
-          <button type="button" onClick={() => onMove(index, -1)} disabled={locked || index === 0} aria-label="Geser ke kiri" className="p-1 disabled:opacity-25">
+          <button
+            type="button"
+            onClick={() => onMove(index, -1)}
+            disabled={locked || index === 0}
+            aria-label="Geser ke kiri"
+            className="p-1 disabled:opacity-25"
+          >
             <ArrowLeft size={14} aria-hidden="true" />
           </button>
-          <button type="button" onClick={() => onMove(index, 1)} disabled={locked || index === total - 1} aria-label="Geser ke kanan" className="p-1 disabled:opacity-25">
+          <button
+            type="button"
+            onClick={() => onMove(index, 1)}
+            disabled={locked || index === total - 1}
+            aria-label="Geser ke kanan"
+            className="p-1 disabled:opacity-25"
+          >
             <ArrowRight size={14} aria-hidden="true" />
           </button>
-          <button type="button" onClick={() => onRemove(item.key)} disabled={locked} aria-label="Hapus gambar" className="p-1 text-accent disabled:opacity-25">
+          <button
+            type="button"
+            onClick={() => onRemove(item.key)}
+            disabled={locked}
+            aria-label="Hapus gambar"
+            className="p-1 text-accent disabled:opacity-25"
+          >
             <X size={14} aria-hidden="true" />
           </button>
         </div>
@@ -188,7 +257,11 @@ export function ImageCarousel({
   ref?: Ref<ImageCarouselHandle>;
 }) {
   const [items, setItems] = useState<Item[]>(() =>
-    initial.map((i) => ({ key: i.cloudinaryId, status: "saved" as const, ...i })),
+    initial.map((i) => ({
+      key: i.cloudinaryId,
+      status: "saved" as const,
+      ...i,
+    })),
   );
   const [problems, setProblems] = useState<string[]>([]);
 
@@ -201,40 +274,60 @@ export function ImageCarousel({
   // Lepas preview lokal saat komponen ditutup
   useEffect(() => {
     return () => {
-      itemsRef.current.forEach((i) => i.preview && URL.revokeObjectURL(i.preview));
+      itemsRef.current.forEach(
+        (i) => i.preview && URL.revokeObjectURL(i.preview),
+      );
     };
   }, []);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   useImperativeHandle(ref, () => ({
     async uploadAll() {
       const snapshot = itemsRef.current;
-      const toUpload = snapshot.filter((i) => (i.status === "local" || i.status === "error") && i.file);
+      const toUpload = snapshot.filter(
+        (i) => (i.status === "local" || i.status === "error") && i.file,
+      );
       const results = new Map<string, SavedImage>();
       let failed = 0;
 
       if (toUpload.length) {
         const keys = new Set(toUpload.map((i) => i.key));
-        setItems((prev) => prev.map((i) => (keys.has(i.key) ? { ...i, status: "uploading", message: undefined } : i)));
+        setItems((prev) =>
+          prev.map((i) =>
+            keys.has(i.key)
+              ? { ...i, status: "uploading", message: undefined }
+              : i,
+          ),
+        );
 
         await runPool(toUpload, PARALLEL_UPLOADS, async (it) => {
           try {
             const r = await uploadToCloudinary(it.file!);
             results.set(it.key, r);
             setItems((prev) =>
-              prev.map((p) => (p.key === it.key ? { ...p, ...r, status: "ready", file: undefined } : p)),
+              prev.map((p) =>
+                p.key === it.key
+                  ? { ...p, ...r, status: "ready", file: undefined }
+                  : p,
+              ),
             );
             if (it.preview) URL.revokeObjectURL(it.preview);
           } catch (e) {
             failed++;
             setItems((prev) =>
               prev.map((p) =>
-                p.key === it.key ? { ...p, status: "error", message: (e as Error).message } : p,
+                p.key === it.key
+                  ? { ...p, status: "error", message: (e as Error).message }
+                  : p,
               ),
             );
           }
@@ -266,7 +359,9 @@ export function ImageCarousel({
       const fresh = unique.slice(0, room);
       setItems([
         ...kept,
-        ...fresh.map((url): Item => ({ key: crypto.randomUUID(), status: "remote", url })),
+        ...fresh.map(
+          (url): Item => ({ key: crypto.randomUUID(), status: "remote", url }),
+        ),
       ]);
       return { added: fresh.length, skipped: unique.length - fresh.length };
     },
@@ -279,8 +374,10 @@ export function ImageCarousel({
     let tooMany = false;
 
     for (const f of files) {
-      if (!ACCEPTED.includes(f.type)) issues.push(`${f.name}: hanya JPG, PNG, atau WebP.`);
-      else if (f.size > MAX_BYTES) issues.push(`${f.name}: ukuran lebih dari 5 MB.`);
+      if (!ACCEPTED.includes(f.type))
+        issues.push(`${f.name}: hanya JPG, PNG, atau WebP.`);
+      else if (f.size > MAX_BYTES)
+        issues.push(`${f.name}: ukuran lebih dari 5 MB.`);
       else if (room <= 0) tooMany = true;
       else {
         accepted.push(f);
@@ -293,13 +390,15 @@ export function ImageCarousel({
     if (accepted.length === 0) return;
     setItems((prev) => [
       ...prev,
-      ...accepted.map((file): Item => ({
-        key: crypto.randomUUID(),
-        status: "local",
-        file,
-        name: file.name,
-        preview: URL.createObjectURL(file),
-      })),
+      ...accepted.map(
+        (file): Item => ({
+          key: crypto.randomUUID(),
+          status: "local",
+          file,
+          name: file.name,
+          preview: URL.createObjectURL(file),
+        }),
+      ),
     ]);
   };
 
@@ -336,11 +435,27 @@ export function ImageCarousel({
   return (
     <div>
       {items.length > 0 && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={items.map((i) => i.key)} strategy={rectSortingStrategy}>
+        <DndContext
+          id="image-carousel"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={items.map((i) => i.key)}
+            strategy={rectSortingStrategy}
+          >
             <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-5">
               {items.map((item, index) => (
-                <Thumb key={item.key} item={item} index={index} total={items.length} locked={locked} onMove={move} onRemove={remove} />
+                <Thumb
+                  key={item.key}
+                  item={item}
+                  index={index}
+                  total={items.length}
+                  locked={locked}
+                  onMove={move}
+                  onRemove={remove}
+                />
               ))}
             </ul>
           </SortableContext>
@@ -365,7 +480,10 @@ export function ImageCarousel({
       )}
 
       {problems.length > 0 && (
-        <ul role="alert" className="mt-2 grid gap-1 text-[11px] font-semibold text-accent">
+        <ul
+          role="alert"
+          className="mt-2 grid gap-1 text-[11px] font-semibold text-accent"
+        >
           {problems.map((p) => (
             <li key={p}>{p}</li>
           ))}
@@ -373,10 +491,12 @@ export function ImageCarousel({
       )}
 
       <p className="mt-2 text-[11px] leading-normal text-muted">
-        JPG, PNG, atau WebP, maksimal 5 MB per file dan {MAX_IMAGES} gambar. Gambar pertama jadi cover; geser untuk
-        mengurutkan. Gambar baru baru diupload saat kamu menekan Simpan, dan gambar yang dihapus baru hilang setelah
-        disimpan. Gambar berlabel Instagram baru diambil server saat Simpan; kalau Simpan gagal karena linknya
-        kedaluwarsa, ambil ulang dari Instagram.
+        JPG, PNG, atau WebP, maksimal 5 MB per file dan {MAX_IMAGES} gambar.
+        Gambar pertama jadi cover; geser untuk mengurutkan. Gambar baru baru
+        diupload saat kamu menekan Simpan, dan gambar yang dihapus baru hilang
+        setelah disimpan. Gambar berlabel Instagram baru diambil server saat
+        Simpan; kalau Simpan gagal karena linknya kedaluwarsa, ambil ulang dari
+        Instagram.
       </p>
     </div>
   );

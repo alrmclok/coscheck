@@ -9,7 +9,7 @@ import { formatDbTime } from "@/lib/reports";
 import { badge, badgeOff, btnGhost, eyebrow, pageTitle } from "@/lib/ui";
 import { setMessageStatus } from "./actions";
 
-export const metadata = { title: "Kotak masuk — coscheck" };
+export const metadata = { title: "Kotak masuk | coscheck" };
 
 const TABS = [
   { key: "open", label: "Perlu ditangani" },
@@ -89,7 +89,7 @@ export default async function InboxPage({
             <div className="flex flex-wrap items-center gap-1.5">
               <span className={badge}>{KIND_LABEL[m.kind]}</span>
               {m.status === "unread" ? (
-                <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-white">
+                <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-on-accent">
                   {INBOX_STATUS_LABEL.unread}
                 </span>
               ) : (

@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/guard";
 import { TZ_LABEL } from "@/lib/tz";
 import { eyebrow, pageTitle } from "@/lib/ui";
 
-export const metadata = { title: "Acara baru — coscheck" };
+export const metadata = { title: "Acara baru | coscheck" };
 export const maxDuration = 60;
 
 export default async function NewEventPage() {

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { btn, eyebrow, shell } from "@/lib/ui";
 
-export const metadata = { title: "Masuk — coscheck" };
+export const metadata = { title: "Masuk | coscheck" };
 
 export default async function LoginPage({
   searchParams,

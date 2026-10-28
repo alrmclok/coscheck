@@ -8,7 +8,7 @@ import { REASON_LABEL, formatDbTime } from "@/lib/reports";
 import { badge, badgeOff, btnDanger, btnGhost, eyebrow, pageTitle } from "@/lib/ui";
 import { resolveReports } from "./actions";
 
-export const metadata = { title: "Laporan — coscheck" };
+export const metadata = { title: "Laporan | coscheck" };
 
 const STATUS_LABEL = { draft: "Draft", published: "Terbit", archived: "Arsip" } as const;
 
@@ -87,7 +87,7 @@ export default async function ReportsPage({
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className={badge}>{items.length} laporan</span>
                   {head.isCancelled === 1 && (
-                    <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-white">
+                    <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-on-accent">
                       Dibatalkan
                     </span>
                   )}

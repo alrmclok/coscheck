@@ -10,7 +10,7 @@ import { requireRole } from "@/lib/guard";
 import { TZ_LABEL } from "@/lib/tz";
 import { badge, badgeOff, btn, eyebrow, pageTitle } from "@/lib/ui";
 
-export const metadata = { title: "Acara — coscheck" };
+export const metadata = { title: "Acara | coscheck" };
 
 const TABS = [
   { key: "all", label: "Semua" },
@@ -111,12 +111,12 @@ export default async function EventsAdminPage({
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className={badge}>{STATUS_LABEL[e.status]}</span>
-                  {e.isCancelled === 1 && <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-white">Dibatalkan</span>}
+                  {e.isCancelled === 1 && <span className="bg-accent px-1.5 py-[3px] font-mono text-[9px] uppercase tracking-[.6px] text-on-accent">Dibatalkan</span>}
                   {Number(e.openReports) > 0 && <span className={badgeOff}>{Number(e.openReports)} laporan</span>}
                 </div>
               </div>
 
-              <div className={`mt-2 font-mono text-[10px] ${stale ? "text-[#9a6a22]" : "text-muted"}`}>
+              <div className={`mt-2 font-mono text-[10px] ${stale ? "text-warn" : "text-muted"}`}>
                 {e.lastVerifiedAt
                   ? `Diverifikasi ${formatShortDate(e.lastVerifiedAt, tz)}${stale ? " (sudah lama)" : ""}`
                   : "Belum diverifikasi"}

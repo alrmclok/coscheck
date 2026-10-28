@@ -5,7 +5,7 @@ export const eyebrow =
   "mb-3 flex items-center gap-[9px] font-mono text-[11px] font-medium uppercase tracking-[1.2px] text-accent before:inline-block before:h-0.5 before:w-[22px] before:bg-accent before:content-['']";
 
 export const btn =
-  "inline-flex cursor-pointer items-center gap-2 border border-ink bg-accent px-4 py-[11px] text-[13px] font-extrabold text-white shadow-[3px_3px_0_var(--color-ink)]";
+  "inline-flex cursor-pointer items-center gap-2 border border-ink bg-accent px-4 py-[11px] text-[13px] font-extrabold text-on-accent shadow-[3px_3px_0_var(--color-ink)]";
 
 export const btnGhost =
   "inline-flex cursor-pointer items-center gap-2 border border-ink bg-card px-3.5 py-2 text-xs font-extrabold text-ink";

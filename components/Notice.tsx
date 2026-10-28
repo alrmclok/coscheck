@@ -10,7 +10,7 @@ export function Notice({ error, ok }: { error?: string; ok?: string }) {
   ) : (
     <div
       role="status"
-      className="my-4 border border-[#57734c] px-3 py-2.5 text-xs font-semibold text-[#57734c]"
+      className="my-4 border border-ok px-3 py-2.5 text-xs font-semibold text-ok"
     >
       {ok}
     </div>

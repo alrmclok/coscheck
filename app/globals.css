@@ -1,21 +1,68 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-paper: #fffaf1;
-  --color-ink: #4d2b19;
-  --color-muted: #777168;
-  --color-line: #d8d0c2;
-  --color-accent: #e85d05;
-  --color-card: #fffdf7;
-  --color-sand: #eae4d8;
-  --color-trust: #eee8db;
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+@theme {
+  --color-paper: #faf9f6;
+  --color-ink: #181614;
+  --color-muted: #6b6661;
+  --color-line: #e8e5e0;
+  --color-accent: #e04f16;
+  --color-card: #ffffff;
+  --color-sand: #f2eee9;
+  --color-trust: #f0ecf4;
+
+  /* new tokens for the hard-coded colors */
+  --color-on-accent: #ffffff;
+  --color-ok: #3b663b;
+  --color-warn: #b57a15;
+  --color-soft: #635d57;
+  --color-faint: #8a8279;
+
+  --dots: #1816140d;
+}
+
+@theme inline {
   --font-sans: var(--font-dm-sans);
   --font-display: var(--font-space-grotesk);
   --font-mono: var(--font-dm-mono);
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #090d16;
+  --color-ink: #f1f5f9;
+  --color-muted: #94a3b8;
+  --color-line: #1e293b;
+  --color-accent: #0ea5e9;
+  --color-card: #111827;
+  --color-sand: #1f2937;
+  --color-trust: #1e1b4b;
+
+  --color-on-accent: #090d16;
+  --color-ok: #4ade80;
+  --color-warn: #fbbf24;
+  --color-soft: #94a3b8;
+  --color-faint: #475569;
+
+  --dots: #f1f5f90f;
+}
+
+
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);
 }
+
+body { background-color: var(--color-paper); color: var(--color-ink); cursor: var(--cursor-default, default); }
+a, button, [role="button"], label, select, summary, .cursor-pointer { cursor: var(--cursor-pointer, pointer) !important; }
+input, textarea, [contenteditable="true"] { cursor: var(--cursor-text, text); }
+.cursor-crosshair { cursor: var(--cursor-crosshair, crosshair) !important; }
+.cursor-move, [data-dragging="true"] { cursor: var(--cursor-move, move) !important; }
+.cursor-wait, [aria-busy="true"] { cursor: var(--cursor-wait, wait) !important; }
+.cursor-help, abbr[title] { cursor: var(--cursor-help, help) !important; }
+.cursor-n-resize, .cursor-row-resize, .cursor-ns-resize, [data-resize="vertical"] { cursor: var(--cursor-n-resize, ns-resize) !important; }
+.cursor-progress { cursor: var(--cursor-progress, progress) !important; }
+.cursor-zoom-in { cursor: var(--cursor-zoom-in, zoom-in) !important; }
+.cursor-zoom-out { cursor: var(--cursor-zoom-out, zoom-out) !important; }
+.cursor-not-allowed, :disabled { cursor: not-allowed !important; }

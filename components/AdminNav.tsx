@@ -48,7 +48,7 @@ export function AdminNav({
             >
               {l.label}
               {n > 0 && (
-                <span className="ml-1.5 inline-block bg-accent px-1.5 py-[2px] align-middle font-mono text-[9px] text-white">
+                <span className="ml-1.5 inline-block bg-accent px-1.5 py-[2px] align-middle font-mono text-[9px] text-on-accent">
                   {n}
                 </span>
               )}

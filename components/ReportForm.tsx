@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Flag } from "lucide-react";
 import { NOTE_MAX, REPORT_REASONS } from "@/lib/reports";
+import { ResizableTextarea } from "@/components/ResizableTextarea";
 import { btn, btnGhost, field, inputFull } from "@/lib/ui";
 
 export default function ReportForm({ slug }: { slug: string }) {
@@ -11,7 +12,6 @@ export default function ReportForm({ slug }: { slug: string }) {
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
-
   async function submit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     if (!reason) {
@@ -26,7 +26,10 @@ export default function ReportForm({ slug }: { slug: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug, reason, note }),
       });
-      const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      const data = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
       if (res.ok && data?.ok) {
         setStatus("done");
         return;
@@ -48,17 +51,28 @@ export default function ReportForm({ slug }: { slug: string }) {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={`${btnGhost} mt-3`}>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={`${btnGhost} mt-3`}
+      >
         <Flag size={16} /> Laporkan masalah
       </button>
     );
   }
 
   return (
-    <form onSubmit={submit} className="mt-3 grid gap-3 border border-ink bg-card p-3">
+    <form
+      onSubmit={submit}
+      className="mt-3 grid gap-3 border border-ink bg-card p-3"
+    >
       <label className={field}>
         Apa yang salah?
-        <select value={reason} onChange={(e) => setReason(e.target.value)} className={inputFull}>
+        <select
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          className={inputFull}
+        >
           <option value="">Pilih alasan</option>
           {REPORT_REASONS.map((r) => (
             <option key={r.value} value={r.value}>
@@ -69,13 +83,12 @@ export default function ReportForm({ slug }: { slug: string }) {
       </label>
       <label className={field}>
         Catatan (boleh dikosongkan)
-        <textarea
+        <ResizableTextarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           maxLength={NOTE_MAX}
           rows={3}
           placeholder="Contoh: di postingan terbaru, acaranya pindah ke hari Minggu."
-          className={inputFull}
         />
         <span className="font-mono text-[10px] font-normal text-muted">
           {note.length}/{NOTE_MAX}
@@ -87,10 +100,18 @@ export default function ReportForm({ slug }: { slug: string }) {
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={status === "sending"} className={`${btn} disabled:opacity-60`}>
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className={`${btn} disabled:opacity-60`}
+        >
           {status === "sending" ? "Mengirim..." : "Kirim laporan"}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className={btnGhost}>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className={btnGhost}
+        >
           Batal
         </button>
       </div>
